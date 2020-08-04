@@ -4,7 +4,7 @@
 extern "C" {
 #include <dlfcn.h>
 #include <errno.h>
-#include <gre/greio.h>
+#include "gre/greio.h"
 }
 
 #define TAG   "DealerBackend"

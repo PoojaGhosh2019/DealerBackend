@@ -103,9 +103,11 @@ void getMacAddr()
         }
 
 	ifr.ifr_addr.sa_family = AF_INET;
-	strncpy(ifr.ifr_name, ETH0, IFNAMSIZ - 1);
+ 	strncpy(ifr.ifr_name, ETH0, IFNAMSIZ - 1);
 
-	ioctl( fileDescriptor, SIOCGIFHWADDR, &ifr);
+	if (ioctl( fileDescriptor, SIOCGIFHWADDR, &ifr) < 0) {
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "SIOCGIFHWADDR failed... %d", errno);
+	}
 	close( fileDescriptor);
 	sprintf(MacBuff, "%.2x%.2x%.2x%.2x%.2x%.2x",
 	(unsigned char)ifr.ifr_hwaddr.sa_data[0],
@@ -115,6 +117,7 @@ void getMacAddr()
 	(unsigned char)ifr.ifr_hwaddr.sa_data[4],
 	(unsigned char)ifr.ifr_hwaddr.sa_data[5]);
 
+	__android_log_print(ANDROID_LOG_DEBUG, TAG, "MAC Address = %s", MacBuff);
 }
 
 /***********************************************************************************************************************
@@ -146,13 +149,16 @@ void getIPAddr()
 
 	/*Accessing network interface information by
 	passing address using ioctl.*/
-	ioctl( fileDescriptor, SIOCGIFADDR, &ifr);
+	if (ioctl( fileDescriptor, SIOCGIFADDR, &ifr) < 0) {
+	    __android_log_print(ANDROID_LOG_DEBUG, TAG, "SIOCGIFADDR failed...%d", errno);
+	}
 
 	/*closing fd*/
 	close( fileDescriptor);
 
 	/*Extract IP Address*/
 	strcpy(IPBuff, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+    __android_log_print(ANDROID_LOG_DEBUG, TAG, "IP Address %s", IPBuff);
 }
 
 /***********************************************************************************************************************
@@ -1254,23 +1260,24 @@ void* lockAndUnlock(void* args)
 	// Creating socket file descriptor
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
 	{
-		perror("socket failed");
+        __android_log_print(ANDROID_LOG_DEBUG, TAG,"socket failed");
 		exit(EXIT_FAILURE);
 	}
 	// Forcefully attaching socket to the port 7620
 	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,&opt, sizeof(opt)))
 	{
-		perror("setsockopt");
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "setsockopt");
 		exit(EXIT_FAILURE);
 	}
 	__android_log_print(ANDROID_LOG_DEBUG, TAG, "binding with the port\n");
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
+	//address.sin_addr.s_addr = htonl(INADDR_ANY);
+	inet_pton(AF_INET, IPADD, &address.sin_addr);
 	address.sin_port = htons(PORT_FOR_LOCK_AND_UNLOCK);
 	// Forcefully attaching socket to the port 7620
 	if (bind(server_fd, (struct sockaddr *)&address,sizeof(address))<0)
 	{
-		perror("bind failed");
+        __android_log_print(ANDROID_LOG_DEBUG, TAG, "bind failed");
 		exit(EXIT_FAILURE);
 	}
 	while(1)
@@ -1279,13 +1286,13 @@ void* lockAndUnlock(void* args)
 		//listing for client request
 		if (listen(server_fd, 3) < 0)
 		{
-			perror("listen");
+            __android_log_print(ANDROID_LOG_DEBUG, TAG, "listen");
 			exit(EXIT_FAILURE);
 		}
 		//accepting the client request
 		if ((accepted_socket = accept(server_fd, (struct sockaddr *)&address,(socklen_t*)&addrlen))<0)
 		{
-			perror("accept");
+            __android_log_print(ANDROID_LOG_DEBUG, TAG, "accept");
 			exit(EXIT_FAILURE);
 		}
 		__android_log_print(ANDROID_LOG_DEBUG, TAG, "connected with client\n");

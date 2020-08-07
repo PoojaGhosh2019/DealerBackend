@@ -46,7 +46,7 @@
 	#define PENDING_JACKPOT_EVENT "pendingJackpotEvent"//name of event occured on GUI
 	#define ZERO "0" 
 	#define BOTH "Both"
-	#define ETH0 "eth0"
+	#define ETH0 "wlan0"
 	#define LOCKBETS "lockBets"//name of event occured on GUI
 	#define RESPONSE "99"//response from the client to server for lock and unlock event
 	#define PROTOCOL_VERSION "2"

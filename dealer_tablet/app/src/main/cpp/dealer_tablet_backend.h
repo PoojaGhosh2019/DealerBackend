@@ -94,7 +94,7 @@ void *lockAndUnlock(void*);
 void sleep_ms(int);
 void *initDealerPad(void *);
 
-int main(void);
+int backend_main(const char * mac);
 
 #endif //DEALER_TABLET_BACKEND_H
 

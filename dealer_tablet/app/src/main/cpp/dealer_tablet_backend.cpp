@@ -95,7 +95,7 @@ void getMacAddr()
 	int fileDescriptor =-1;
 	struct ifreq ifr ={0,};
 
-	fileDescriptor = socket(AF_INET, SOCK_DGRAM, 0);
+	fileDescriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
         if( fileDescriptor == -1)
 	{
                 __android_log_print(ANDROID_LOG_DEBUG, TAG, "socket creation failed... %d", errno);
@@ -1359,7 +1359,7 @@ void* lockAndUnlock(void* args)
 * param              : int,char **
 * Author             : CHETU
 ***********************************************************************************************************************/ 
-int main()
+int backend_main(const char* mac)
 {
     //Manually load shared libraries
 	void* libgre = dlopen("/data/data/com.example.dealer_tablet/lib/libgre.so", RTLD_NOW);
@@ -1412,7 +1412,9 @@ int main()
 
 	pthread_t lockAndUnlockThread;
         #ifndef WIN32
-	getMacAddr();
+	//getMacAddr();
+	strncpy(MacBuff, mac, 20);
+    __android_log_print(ANDROID_LOG_DEBUG, TAG, "MAC Address received from JAVA = %s", MacBuff);
 	getIPAddr();
         #endif // !WIN32gre_io_size_buffer
 
